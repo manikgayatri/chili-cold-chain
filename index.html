@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Alert - Monitoring Cabai</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+  <!-- CONTAINER wrap -->
+  <div class="container">
+
+    <header>
+      <h1>Monitoring Cabai — Alert Real-Time</h1>
+      <p class="subtitle">Tujuan: turunkan reject hingga 30% melalui peringatan dini</p>
+    </header>
+
+    <main>
+
+      <section id="dashboard">
+        <div class="card">
+          <h2>Status Terbaru</h2>
+          <div id="latest">
+            <p>Suhu: <span id="temp">—</span> °C</p>
+            <p>Kelembapan: <span id="hum">—</span> %</p>
+            <p>Indikator Kerusakan: <span id="damage">—</span></p>
+            <p>Reject Rate Saat Ini: <span id="rejectRate">—</span> %</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Peringatan (Real-Time)</h2>
+          <div id="alerts"></div>
+        </div>
+
+        <div class="card">
+          <h2>Saran Tindakan</h2>
+          <ul id="advice">
+            <li>Tunggu data...</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="controls">
+        <div class="card">
+          <h2>Simulasi / Pengujian (dev)</h2>
+          <p>Untuk pengujian, kamu bisa push data contoh ke Firestore.</p>
+          <button id="simulateBtn">Kirim Simulasi Alert</button>
+        </div>
+      </section>
+
+    </main>
+
+  </div> <!-- END CONTAINER -->
+
+  <!-- Toast -->
+  <div id="toast" class="hidden"></div>
+
+  <!-- FIREBASE CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <!-- FIREBASE CONFIG -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDepdQ_ihzT-AiBhBdCYL5pq766NanHrdA",
+      authDomain: "chili-cold-chain-7be26.firebaseapp.com",
+      projectId: "chili-cold-chain-7be26",
+      storageBucket: "chili-cold-chain-7be26.firebasestorage.app",
+      messagingSenderId: "251073388792",
+      appId: "1:251073388792:web:058c9af275c6cd8c4ddb0d",
+      measurementId: "G-48Q59JBNH2"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
+
+  <!-- APP JS -->
+  <script src="app.js"></script>
+
+</body>
+</html>
