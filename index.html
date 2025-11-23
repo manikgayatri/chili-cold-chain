@@ -1,85 +1,283 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Alert - Monitoring Cabai</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8" />
+  <title>Dashboard Alert Cabai – Before vs After Web Cloud</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
-
-  <!-- CONTAINER wrap -->
-  <div class="container">
-
+  <div class="app">
     <header>
-      <h1>Monitoring Cabai — Alert Real-Time</h1>
-      <p class="subtitle">Tujuan: turunkan reject hingga 30% melalui peringatan dini</p>
+      <div class="title">
+        <div class="badge">
+          <span class="badge-dot"></span>
+          Monitoring Chili Cold Chain – Real-time Alert
+        </div>
+        <h1>Web Cloud Alert untuk Menurunkan Reject Cabai</h1>
+        <p>
+          Simulasi bagaimana sistem alert berbasis web &amp; cloud membantu menurunkan
+          reject cabai minimal <strong>30%</strong> dengan membandingkan data
+          <strong>Before</strong> dan <strong>After</strong>.
+        </p>
+      </div>
+
+      <div class="controls">
+        <div class="controls-group">
+          <label>Baseline reject dari data Before (%)</label>
+          <input
+            type="number"
+            id="baselineRejectInput"
+            min="1"
+            max="100"
+            step="0.1"
+          />
+        </div>
+        <div class="controls-group">
+          <label>Batas cacat maksimal (%)</label>
+          <input
+            type="number"
+            id="defectThresholdInput"
+            min="1"
+            max="100"
+            step="0.1"
+            value="20"
+          />
+        </div>
+        <button class="btn btn-outline" id="updateConfigBtn">
+          <span class="btn-icon">⚙️</span>
+          Terapkan Pengaturan
+        </button>
+        <button class="btn btn-primary" id="toggleSimulationBtn">
+          <span class="btn-icon">▶</span>
+          Jalankan Simulasi Data
+        </button>
+      </div>
     </header>
 
     <main>
-
-      <section id="dashboard">
-        <div class="card">
-          <h2>Status Terbaru</h2>
-          <div id="latest">
-            <p>Suhu: <span id="temp">—</span> °C</p>
-            <p>Kelembapan: <span id="hum">—</span> %</p>
-            <p>Indikator Kerusakan: <span id="damage">—</span></p>
-            <p>Reject Rate Saat Ini: <span id="rejectRate">—</span> %</p>
+      <!-- KIRI: METRICS & TABEL -->
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">
+              Bukti Pengurangan Reject – Before vs After
+            </div>
+            <div class="card-subtitle">
+              Diambil dari sheet <strong>Reject_KPI</strong> (ETL/Power BI kamu).
+            </div>
           </div>
         </div>
 
-        <div class="card">
-          <h2>Peringatan (Real-Time)</h2>
-          <div id="alerts"></div>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">
+              <span>Baseline Reject (Before)</span>
+              <span class="metric-badge" id="baselineBadge">Auto dari data</span>
+            </div>
+            <div class="metric-value">
+              <span id="baselineRejectText">0</span><span>%</span>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">
+              <span>Reject Saat Ini (After)</span>
+              <span
+                class="metric-badge metric-badge--bad"
+                id="currentRejectBadge"
+              >
+                Tinggi
+              </span>
+            </div>
+            <div class="metric-value">
+              <span id="currentRejectText">0</span><span>%</span>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">
+              <span>Penurunan Reject</span>
+              <span
+                class="metric-badge metric-badge--good"
+                id="reductionBadge"
+              >
+                Target ≥ 30%
+              </span>
+            </div>
+            <div class="metric-value">
+              <span id="reductionText">0</span><span>%</span>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">
+              <span>Total Batch Terpantau</span>
+              <span class="metric-badge" id="rejectCountBadge">0 Reject</span>
+            </div>
+            <div class="metric-value">
+              <span id="totalBatchText">0</span>
+            </div>
+          </div>
         </div>
 
-        <div class="card">
-          <h2>Saran Tindakan</h2>
-          <ul id="advice">
-            <li>Tunggu data...</li>
-          </ul>
+        <div class="progress-wrapper">
+          <div class="progress-header">
+            <span>Progres Pencapaian Target Pengurangan 30%</span>
+            <span id="progressText">0% dari target</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+          </div>
+          <div class="progress-marker">
+            <div class="progress-marker-line" style="left: 100%"></div>
+            <div class="progress-marker-label" style="left: 100%">
+              Target 30%
+            </div>
+          </div>
+          <div class="status-text" id="statusText">
+            <span class="status-pill neutral"></span>
+            <span>
+              Menunggu simulasi dijalankan untuk menilai dampak pengurangan reject...
+            </span>
+          </div>
         </div>
+
+        <div class="thresholds" id="thresholdInfo">
+          <span>
+            Ambang cacat saat ini:
+            <strong id="thresholdDefectText">20%</strong>
+          </span>
+          <span>
+            Peringatan dini jika cacat &ge;
+            <strong id="thresholdEarlyText">16%</strong>
+          </span>
+        </div>
+
+        <div class="data-table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Batch</th>
+                <th>Waktu</th>
+                <th>Truck</th>
+                <th>Suhu (°C)</th>
+                <th>Cacat (%)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="batchTableBody">
+              <!-- Diisi dari JS berdasarkan sheet Condition -->
+            </tbody>
+          </table>
+        </div>
+
+        <p class="note">
+          <strong>Cara baca:</strong> baseline dan after diambil dari sheet
+          <strong>Reject_KPI</strong> (kolom
+          <code>reject_before</code>, <code>reject_after</code>,
+          <code>reject_reduction</code>, <code>Reject_Target</code>).
+          Alert real-time didasarkan pada sheet <strong>Condition</strong>
+          (kolom suhu, visual, dll) dan <strong>Alert</strong>.
+        </p>
       </section>
 
-      <section id="controls">
-        <div class="card">
-          <h2>Simulasi / Pengujian (dev)</h2>
-          <p>Untuk pengujian, kamu bisa push data contoh ke Firestore.</p>
-          <button id="simulateBtn">Kirim Simulasi Alert</button>
+      <!-- KANAN: ALERT -->
+      <section class="card">
+        <!-- ⭐⭐ FORM INPUT MANUAL BATCH ⭐⭐ -->
+        <div class="card-header">
+          <div>
+            <div class="card-title">Input Batch Manual</div>
+            <div class="card-subtitle">
+              Petani / petugas bisa mengisi data batch langsung di sini.
+            </div>
+          </div>
         </div>
+
+        <form id="manualBatchForm" class="manual-form">
+          <div class="manual-row">
+            <div class="manual-group">
+              <label for="manualBatchId">ID Batch</label>
+              <input
+                type="text"
+                id="manualBatchId"
+                placeholder="mis. BATCH_5"
+                required
+              />
+            </div>
+            <div class="manual-group">
+              <label for="manualTruckId">ID Truck</label>
+              <input
+                type="text"
+                id="manualTruckId"
+                placeholder="mis. TRUCK_1"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="manual-row">
+            <div class="manual-group">
+              <label for="manualTemp">Suhu (°C)</label>
+              <input
+                type="number"
+                step="0.1"
+                id="manualTemp"
+                placeholder="mis. 18.5"
+                required
+              />
+            </div>
+            <div class="manual-group">
+              <label for="manualDefect">Cacat / Susut bobot (%)</label>
+              <input
+                type="number"
+                step="0.1"
+                id="manualDefect"
+                placeholder="mis. 3.5"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="manual-row">
+            <button type="submit" class="btn btn-primary">
+              ➕ Tambah Batch
+            </button>
+            <span class="manual-hint">
+              Waktu otomatis pakai jam saat ini.
+            </span>
+          </div>
+        </form>
       </section>
 
+        <div class="card-header">
+          <div>
+            <div class="card-title">Peringatan Real-time</div>
+            <div class="card-subtitle">
+              Contoh notifikasi yang akan diterima petani/gudang jika kualitas
+              cabai bermasalah.
+            </div>
+          </div>
+          <span class="pill-soft" id="alertCounter">0 alert</span>
+        </div>
+
+        <div class="alert-list" id="alertList">
+          <div class="alert-empty">
+            Belum ada peringatan. Klik <strong>“Jalankan Simulasi Data”</strong>
+            untuk memutar data dari sheet <strong>Condition</strong>.
+          </div>
+        </div>
+
+        <p class="note">
+          Notifikasi ini di dunia nyata bisa dikirim ke
+          <strong>HP petani, WA grup, dashboard gudang, atau aplikasi pasar</strong>,
+          sehingga masyarakat di rantai pasok cabai bisa mengambil aksi dini
+          sebelum reject makin besar.
+        </p>
+      </section>
     </main>
+  </div>
 
-  </div> <!-- END CONTAINER -->
-
-  <!-- Toast -->
-  <div id="toast" class="hidden"></div>
-
-  <!-- FIREBASE CDN -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-  <!-- FIREBASE CONFIG -->
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDepdQ_ihzT-AiBhBdCYL5pq766NanHrdA",
-      authDomain: "chili-cold-chain-7be26.firebaseapp.com",
-      projectId: "chili-cold-chain-7be26",
-      storageBucket: "chili-cold-chain-7be26.firebasestorage.app",
-      messagingSenderId: "251073388792",
-      appId: "1:251073388792:web:058c9af275c6cd8c4ddb0d",
-      measurementId: "G-48Q59JBNH2"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-  </script>
-
-  <!-- APP JS -->
   <script src="app.js"></script>
-
 </body>
 </html>
